@@ -11,17 +11,17 @@ import {
   ParseUUIDPipe,
   UsePipes,
 } from '@nestjs/common';
-import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdatePasswordDto } from './dto/update-user-password.dto';
+import { ArtistService } from './artist.service';
+import { CreateArtistDto } from './dto/create-artist.dto';
+import { UpdateArtistDto } from './dto/update-artist.dto';
 
-@Controller('user')
-export class UserController {
-  constructor(private readonly dataService: UserService) {}
+@Controller('artist')
+export class ArtistController {
+  constructor(private readonly dataService: ArtistService) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.dataService.create(createUserDto);
+  create(@Body() dto: CreateArtistDto) {
+    return this.dataService.create(dto);
   }
 
   @Get()
@@ -38,9 +38,9 @@ export class UserController {
   @Put(':id')
   update(
     @Param('id', new ParseUUIDPipe()) id: string,
-    @Body() updateUserDto: UpdatePasswordDto,
+    @Body() dto: UpdateArtistDto,
   ) {
-    return this.dataService.update(id, updateUserDto);
+    return this.dataService.update(id, dto);
   }
 
   @Delete(':id')

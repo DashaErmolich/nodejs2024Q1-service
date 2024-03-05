@@ -17,22 +17,22 @@ import { UpdateTrackDto } from './dto/update-track.dto';
 
 @Controller('track')
 export class TrackController {
-  constructor(private readonly trackService: TrackService) {}
+  constructor(private readonly dataService: TrackService) {}
 
   @Post()
   create(@Body() dto: CreateTrackDto) {
-    return this.trackService.create(dto);
+    return this.dataService.create(dto);
   }
 
   @Get()
   findAll() {
-    return this.trackService.findAll();
+    return this.dataService.findAll();
   }
 
   @Get(':id')
   @UsePipes(ParseUUIDPipe)
   findOne(@Param('id', new ParseUUIDPipe()) id: string) {
-    return this.trackService.findOne(id);
+    return this.dataService.findOne(id);
   }
 
   @Put(':id')
@@ -40,12 +40,12 @@ export class TrackController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: UpdateTrackDto,
   ) {
-    return this.trackService.update(id, dto);
+    return this.dataService.update(id, dto);
   }
 
   @Delete(':id')
   @UsePipes(ParseUUIDPipe)
   remove(@Param('id') id: string) {
-    return this.trackService.remove(id);
+    return this.dataService.remove(id);
   }
 }

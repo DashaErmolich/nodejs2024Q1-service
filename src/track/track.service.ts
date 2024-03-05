@@ -4,6 +4,7 @@ import { TrackDataService } from './track-data.service';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { ITrack } from './interfaces/track.interface';
 import { UpdateTrackDto } from './dto/update-track.dto';
+import { TrackErrorMessage } from './enums/error-message';
 
 @Injectable()
 export class TrackService {
@@ -24,7 +25,7 @@ export class TrackService {
       return track;
     }
 
-    throw new HttpException(`Track was not found`, HttpStatus.NOT_FOUND);
+    throw new HttpException(TrackErrorMessage.NotFound, HttpStatus.NOT_FOUND);
   }
 
   update(id: string, dto: UpdateTrackDto) {

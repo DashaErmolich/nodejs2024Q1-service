@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { DataService } from 'src/data/data.service';
-import { IUser } from './interfaces/user.interface';
+import { ITrack } from './interfaces/track.interface';
 
 @Injectable()
-export class UserDataService extends DataService<IUser> {
+export class TrackDataService extends DataService<ITrack> {
   constructor() {
     super();
   }

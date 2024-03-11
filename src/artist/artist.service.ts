@@ -2,7 +2,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { getId } from 'src/utils/utils';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { IArtist } from './interfaces/artist.interface';
-import { ArtistErrorMessage } from './enums/error-message';
 import { BaseService, IErrorMessage } from 'src/abstract/base.service';
 import { BaseDataService } from 'src/abstract/base-data.service';
 import { TrackService } from 'src/track/track.service';

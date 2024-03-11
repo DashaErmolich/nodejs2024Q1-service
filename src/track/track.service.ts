@@ -1,8 +1,7 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { getId } from 'src/utils/utils';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { ITrack } from './interfaces/track.interface';
-import { TrackErrorMessage } from './enums/error-message';
 import { BaseService, IErrorMessage } from 'src/abstract/base.service';
 import { BaseDataService } from 'src/abstract/base-data.service';
 

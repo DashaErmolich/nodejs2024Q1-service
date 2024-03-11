@@ -1,18 +1,30 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { BaseDataService } from './base-data.service';
 
 interface HasId {
   id: string;
 }
 
-export abstract class BaseService<T extends HasId> {
-  protected dataService: BaseDataService<T>;
+export interface IErrorMessage {
+  NotFound: string;
+}
 
-  constructor(dataService: BaseDataService<T>) {
-    this.dataService = dataService;
-  }
+export abstract class BaseService<T extends HasId> {
+  constructor(
+    protected ErrorMessage: IErrorMessage,
+    protected dataService: BaseDataService<T>,
+  ) {}
+
   public abstract create(dto: Partial<T>): Partial<T>;
 
-  public abstract findOne(id: string): T;
+  public findOne(id: string): T {
+    const item: T | undefined = this.dataService.getOne(id);
+    if (item) {
+      return item;
+    }
+
+    throw new NotFoundException(this.ErrorMessage.NotFound);
+  }
 
   protected abstract cleanUpAfterDelete(id: string): void;
 
@@ -43,13 +55,4 @@ export abstract class BaseService<T extends HasId> {
       return [...acc];
     }, []);
   }
-
-  // public findOne(id: string, errorMessage: string): T {
-  //   const item: T | undefined = this.dataService.getOne(id);
-  //   if (item) {
-  //     return item;
-  //   }
-
-  //   throw new HttpException(errorMessage, HttpStatus.NOT_FOUND);
-  // }
 }

@@ -1,18 +1,21 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { IPublicUser, IUser } from './interfaces/user.interface';
 import { UpdatePasswordDto } from './dto/update-user-password.dto';
 import { getId, increment } from 'src/utils/utils';
 import { UserErrorMessage } from './enums/error-message';
-import { BaseService } from 'src/abstract/base.service';
+import { BaseService, IErrorMessage } from 'src/abstract/base.service';
 import { BaseDataService } from 'src/abstract/base-data.service';
 
 const DEFAULT_USER_VERSION = 1;
 
 @Injectable()
 export class UserService extends BaseService<IUser> {
-  constructor(dataService: BaseDataService<IUser>) {
-    super(dataService);
+  constructor(
+    @Inject('ERROR_MSG') protected ErrorMessage: IErrorMessage,
+    protected dataService: BaseDataService<IUser>,
+  ) {
+    super(ErrorMessage, dataService);
   }
   create(dto: CreateUserDto): IPublicUser {
     const timestamp = Date.now();
@@ -25,15 +28,6 @@ export class UserService extends BaseService<IUser> {
     };
     this.dataService.save(newUser.id, { ...newUser, password: dto.password });
     return newUser;
-  }
-
-  findOne(id: string): IUser {
-    const user: IUser | undefined = this.dataService.getOne(id);
-    if (user) {
-      return user;
-    }
-
-    throw new HttpException(UserErrorMessage.NotFound, HttpStatus.NOT_FOUND);
   }
 
   updateUser(id: string, dto: UpdatePasswordDto): IPublicUser {

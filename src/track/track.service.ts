@@ -1,29 +1,23 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { getId } from 'src/utils/utils';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { ITrack } from './interfaces/track.interface';
 import { TrackErrorMessage } from './enums/error-message';
-import { BaseService } from 'src/abstract/base.service';
+import { BaseService, IErrorMessage } from 'src/abstract/base.service';
 import { BaseDataService } from 'src/abstract/base-data.service';
 
 @Injectable()
 export class TrackService extends BaseService<ITrack> {
-  constructor(dataService: BaseDataService<ITrack>) {
-    super(dataService);
+  constructor(
+    @Inject('ERROR_MSG') protected ErrorMessage: IErrorMessage,
+    protected dataService: BaseDataService<ITrack>,
+  ) {
+    super(ErrorMessage, dataService);
   }
   create(dto: CreateTrackDto) {
     const newTrack: ITrack = { ...dto, id: getId() };
     this.dataService.save(newTrack.id, newTrack);
     return newTrack;
-  }
-
-  findOne(id: string): ITrack {
-    const track: ITrack | undefined = this.dataService.getOne(id);
-    if (track) {
-      return track;
-    }
-
-    throw new HttpException(TrackErrorMessage.NotFound, HttpStatus.NOT_FOUND);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function

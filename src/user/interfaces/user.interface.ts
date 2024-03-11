@@ -6,3 +6,5 @@ export interface IUser {
   createdAt: number; // timestamp of creation
   updatedAt: number; // timestamp of last update
 }
+
+export type IPublicUser = Omit<IUser, 'password'>;

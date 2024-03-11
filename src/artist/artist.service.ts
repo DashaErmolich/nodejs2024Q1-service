@@ -1,22 +1,26 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { getId } from 'src/utils/utils';
-import { ArtistDataService } from './artist-data.service';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { IArtist } from './interfaces/artist.interface';
 import { ArtistErrorMessage } from './enums/error-message';
-import { UpdateArtistDto } from './dto/update-artist.dto';
+import { BaseService } from 'src/abstract/base.service';
+import { BaseDataService } from 'src/abstract/base-data.service';
+import { TrackService } from 'src/track/track.service';
+import { AlbumService } from '../album/album.service';
 
 @Injectable()
-export class ArtistService {
-  constructor(private dataService: ArtistDataService) {}
+export class ArtistService extends BaseService<IArtist> {
+  constructor(
+    dataService: BaseDataService<IArtist>,
+    private trackService: TrackService,
+    private albumService: AlbumService,
+  ) {
+    super(dataService);
+  }
   create(dto: CreateArtistDto) {
     const newTrack: IArtist = { ...dto, id: getId() };
     this.dataService.save(newTrack.id, newTrack);
     return newTrack;
-  }
-
-  findAll(): IArtist[] {
-    return this.dataService.getAll();
   }
 
   findOne(id: string): IArtist {
@@ -28,17 +32,8 @@ export class ArtistService {
     throw new HttpException(ArtistErrorMessage.NotFound, HttpStatus.NOT_FOUND);
   }
 
-  update(id: string, dto: UpdateArtistDto) {
-    const artist = this.findOne(id);
-    for (const key in dto) {
-      artist[key] = dto[key];
-    }
-    this.dataService.save(id, artist);
-    return artist;
-  }
-
-  remove(id: string) {
-    this.findOne(id);
-    this.dataService.remove(id);
+  protected cleanUpAfterDelete(id: string): void {
+    this.trackService.setArtistIdToNull(id);
+    this.albumService.setArtistIdToNull(id);
   }
 }

@@ -40,10 +40,11 @@ export class UserController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateUserDto: UpdatePasswordDto,
   ) {
-    return this.dataService.update(id, updateUserDto);
+    return this.dataService.updateUser(id, updateUserDto);
   }
 
   @Delete(':id')
+  @HttpCode(204)
   @UsePipes(ParseUUIDPipe)
   remove(@Param('id') id: string) {
     return this.dataService.remove(id);

@@ -14,13 +14,14 @@ import {
 import { TrackService } from './track.service';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
+import { ITrack } from './interfaces/track.interface';
 
 @Controller('track')
 export class TrackController {
   constructor(private readonly dataService: TrackService) {}
 
   @Post()
-  create(@Body() dto: CreateTrackDto) {
+  create(@Body() dto: CreateTrackDto): ITrack {
     return this.dataService.create(dto);
   }
 
@@ -44,6 +45,7 @@ export class TrackController {
   }
 
   @Delete(':id')
+  @HttpCode(204)
   @UsePipes(ParseUUIDPipe)
   remove(@Param('id') id: string) {
     return this.dataService.remove(id);

@@ -44,6 +44,7 @@ export class ArtistController {
   }
 
   @Delete(':id')
+  @HttpCode(204)
   @UsePipes(ParseUUIDPipe)
   remove(@Param('id') id: string) {
     return this.dataService.remove(id);

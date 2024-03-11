@@ -1,11 +1,9 @@
-import { ITrack } from 'src/track/interfaces/track.interface';
-import { IUser } from 'src/user/interfaces/user.interface';
+import { Injectable } from '@nestjs/common';
 
 export type MyData<T> = Map<string, T>;
 
-type T = IUser | ITrack;
-
-export abstract class DataService<T> {
+@Injectable()
+export class BaseDataService<T> {
   protected data: MyData<T>;
 
   constructor() {

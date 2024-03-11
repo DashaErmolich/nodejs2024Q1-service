@@ -1,28 +1,30 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { IUser } from './interfaces/user.interface';
-import { UserDataService } from './user-data.service';
+import { IPublicUser, IUser } from './interfaces/user.interface';
 import { UpdatePasswordDto } from './dto/update-user-password.dto';
-import { getId } from 'src/utils/utils';
+import { getId, increment } from 'src/utils/utils';
 import { UserErrorMessage } from './enums/error-message';
+import { BaseService } from 'src/abstract/base.service';
+import { BaseDataService } from 'src/abstract/base-data.service';
+
+const DEFAULT_USER_VERSION = 1;
 
 @Injectable()
-export class UserService {
-  constructor(private dataService: UserDataService) {}
-  create(dto: CreateUserDto) {
-    const newUser: IUser = {
-      ...dto,
-      id: getId(),
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      version: 0,
-    };
-    this.dataService.save(newUser.id, newUser);
-    return newUser;
+export class UserService extends BaseService<IUser> {
+  constructor(dataService: BaseDataService<IUser>) {
+    super(dataService);
   }
-
-  findAll(): IUser[] {
-    return this.dataService.getAll();
+  create(dto: CreateUserDto): IPublicUser {
+    const timestamp = Date.now();
+    const newUser: IPublicUser = {
+      login: dto.login,
+      id: getId(),
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      version: DEFAULT_USER_VERSION,
+    };
+    this.dataService.save(newUser.id, { ...newUser, password: dto.password });
+    return newUser;
   }
 
   findOne(id: string): IUser {
@@ -34,17 +36,14 @@ export class UserService {
     throw new HttpException(UserErrorMessage.NotFound, HttpStatus.NOT_FOUND);
   }
 
-  update(id: string, dto: UpdatePasswordDto) {
+  updateUser(id: string, dto: UpdatePasswordDto): IPublicUser {
     const user = this.findOne(id);
     this.checkPassword(user.password, dto.oldPassword);
     user.password = dto.newPassword;
+    user.version = increment(user.version);
+    user.updatedAt = Date.now();
     this.dataService.save(id, user);
-    return user;
-  }
-
-  remove(id: string) {
-    this.findOne(id);
-    this.dataService.remove(id);
+    return this.getPublicUser(user);
   }
 
   private checkPassword(dbPassword: string, dtoPassword: string) {
@@ -54,5 +53,14 @@ export class UserService {
         HttpStatus.FORBIDDEN,
       );
     }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  protected cleanUpAfterDelete(id: string): void {}
+
+  private getPublicUser(user: IUser): IPublicUser {
+    const copy = { ...user };
+    delete copy.password;
+    return copy;
   }
 }

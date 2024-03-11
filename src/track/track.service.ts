@@ -1,22 +1,20 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { getId } from 'src/utils/utils';
-import { TrackDataService } from './track-data.service';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { ITrack } from './interfaces/track.interface';
-import { UpdateTrackDto } from './dto/update-track.dto';
 import { TrackErrorMessage } from './enums/error-message';
+import { BaseService } from 'src/abstract/base.service';
+import { BaseDataService } from 'src/abstract/base-data.service';
 
 @Injectable()
-export class TrackService {
-  constructor(private dataService: TrackDataService) {}
+export class TrackService extends BaseService<ITrack> {
+  constructor(dataService: BaseDataService<ITrack>) {
+    super(dataService);
+  }
   create(dto: CreateTrackDto) {
     const newTrack: ITrack = { ...dto, id: getId() };
     this.dataService.save(newTrack.id, newTrack);
     return newTrack;
-  }
-
-  findAll(): ITrack[] {
-    return this.dataService.getAll();
   }
 
   findOne(id: string): ITrack {
@@ -28,17 +26,30 @@ export class TrackService {
     throw new HttpException(TrackErrorMessage.NotFound, HttpStatus.NOT_FOUND);
   }
 
-  update(id: string, dto: UpdateTrackDto) {
-    const track = this.findOne(id);
-    for (const key in dto) {
-      track[key] = dto[key];
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  protected cleanUpAfterDelete(id: string): void {}
+
+  public setAlbumIdToNull(albumId: string): void {
+    const track: ITrack | undefined = this.findAll().find(
+      (v) => v.albumId === albumId,
+    );
+    if (track) {
+      track.albumId = null;
+      this.dataService.save(track.id, track);
     }
-    this.dataService.save(id, track);
-    return track;
+
+    // throw new HttpException(TrackErrorMessage.NotFound, HttpStatus.NOT_FOUND);
   }
 
-  remove(id: string) {
-    this.findOne(id);
-    this.dataService.remove(id);
+  public setArtistIdToNull(artistId: string): void {
+    const track: ITrack | undefined = this.findAll().find(
+      (v) => v.artistId === artistId,
+    );
+    if (track) {
+      track.artistId = null;
+      this.dataService.save(track.id, track);
+    }
+
+    // throw new HttpException(TrackErrorMessage.NotFound, HttpStatus.NOT_FOUND);
   }
 }

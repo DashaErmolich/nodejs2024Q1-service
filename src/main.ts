@@ -11,7 +11,13 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const swaggerConfig = load(await readFile('doc/api.yaml', 'utf8'));
   SwaggerModule.setup('doc', app, swaggerConfig as OpenAPIObject);
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      skipNullProperties: true,
+    }),
+  );
   await app.listen(PORT, () => `Server started on port = ${PORT}`);
 }
 bootstrap();

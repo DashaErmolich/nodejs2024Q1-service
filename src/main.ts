@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 4000;
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const swaggerConfig = load(await readFile('doc/api.yaml', 'utf8'));
-  SwaggerModule.setup('doc', app, swaggerConfig as OpenAPIObject);
+  SwaggerModule.setup('api', app, swaggerConfig as OpenAPIObject);
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

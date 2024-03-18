@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto';
+import bcrypt from 'bcrypt';
 
 export function getId(): string {
   return randomUUID();

@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { IPublicUser, IUser } from './interfaces/user.interface';
 import { UpdatePasswordDto } from './dto/update-user-password.dto';
@@ -6,18 +12,20 @@ import { getId, increment } from 'src/utils/utils';
 import { UserErrorMessage } from './enums/error-message';
 import { BaseService, IErrorMessage } from 'src/abstract/base.service';
 import { BaseDataService } from 'src/abstract/base-data.service';
+import { DataSource, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from './entities/user.entity';
 
 const DEFAULT_USER_VERSION = 1;
 
 @Injectable()
-export class UserService extends BaseService<IUser> {
+export class UserService {
   constructor(
     @Inject('ERROR_MSG') protected ErrorMessage: IErrorMessage,
-    protected dataService: BaseDataService<IUser>,
-  ) {
-    super(ErrorMessage, dataService);
-  }
-  create(dto: CreateUserDto): IPublicUser {
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+  ) {}
+  public async create(dto: CreateUserDto) {
     const timestamp = Date.now();
     const newUser: IPublicUser = {
       login: dto.login,
@@ -26,18 +34,34 @@ export class UserService extends BaseService<IUser> {
       updatedAt: timestamp,
       version: DEFAULT_USER_VERSION,
     };
-    this.dataService.save(newUser.id, { ...newUser, password: dto.password });
+    await this.userRepository.save({ ...newUser, password: dto.password });
     return newUser;
   }
 
-  updateUser(id: string, dto: UpdatePasswordDto): IPublicUser {
-    const user = this.findOne(id);
+  public async findOne(id: string) {
+    const user = await this.findById(id);
+    return this.getPublicUser(user);
+  }
+
+  async updateUser(id: string, dto: UpdatePasswordDto) {
+    const user = await this.findById(id);
     this.checkPassword(user.password, dto.oldPassword);
     user.password = dto.newPassword;
     user.version = increment(user.version);
     user.updatedAt = Date.now();
-    this.dataService.save(id, user);
+    await this.userRepository.update(id, {
+      password: dto.newPassword,
+    });
     return this.getPublicUser(user);
+  }
+
+  async findAll() {
+    return await this.userRepository.find();
+  }
+
+  async remove(id: string) {
+    await this.findById(id);
+    await this.userRepository.delete(id);
   }
 
   private checkPassword(dbPassword: string, dtoPassword: string) {
@@ -49,12 +73,21 @@ export class UserService extends BaseService<IUser> {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  protected cleanUpAfterDelete(id: string): void {}
-
   private getPublicUser(user: IUser): IPublicUser {
     const copy = { ...user };
     delete copy.password;
-    return copy;
+    return {
+      ...copy,
+      createdAt: Number(copy.createdAt),
+      updatedAt: Number(copy.updatedAt),
+    };
+  }
+
+  private async findById(id: string) {
+    const user = await this.userRepository.findOneBy({ id });
+    if (user) {
+      return user;
+    }
+    throw new NotFoundException(this.ErrorMessage.NotFound);
   }
 }

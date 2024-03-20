@@ -1,6 +1,4 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
-import { getId, increment } from '../../utils/utils';
-import { CreateUserDto } from '../dto/create-user.dto';
 
 @Entity()
 export class User {

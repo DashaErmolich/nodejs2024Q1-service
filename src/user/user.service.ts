@@ -84,10 +84,10 @@ export class UserService {
   }
 
   private async findById(id: string) {
-    const user = await this.userRepository.findOneBy({ id });
-    if (user) {
-      return user;
+    try {
+      return await this.userRepository.findOneByOrFail({ id });
+    } catch (error) {
+      throw new NotFoundException(this.ErrorMessage.NotFound);
     }
-    throw new NotFoundException(this.ErrorMessage.NotFound);
   }
 }

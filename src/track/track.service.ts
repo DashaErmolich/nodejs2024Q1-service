@@ -1,48 +1,70 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { getId } from 'src/utils/utils';
+import {
+  Inject,
+  Injectable,
+  NotAcceptableException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateTrackDto } from './dto/create-track.dto';
-import { ITrack } from './interfaces/track.interface';
-import { BaseService, IErrorMessage } from 'src/abstract/base.service';
-import { BaseDataService } from 'src/abstract/base-data.service';
+import { IErrorMessage } from 'src/abstract/base.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Track } from './entities/track.entity';
+import { Repository } from 'typeorm';
+import { UpdateTrackDto } from './dto/update-track.dto';
+import { AlbumService } from 'src/album/album.service';
+import { ArtistService } from 'src/artist/artist.service';
 
 @Injectable()
-export class TrackService extends BaseService<ITrack> {
+export class TrackService {
   constructor(
     @Inject('ERROR_MSG') protected ErrorMessage: IErrorMessage,
-    protected dataService: BaseDataService<ITrack>,
-  ) {
-    super(ErrorMessage, dataService);
-  }
-  create(dto: CreateTrackDto) {
-    const newTrack: ITrack = { ...dto, id: getId() };
-    this.dataService.save(newTrack.id, newTrack);
-    return newTrack;
+    @InjectRepository(Track)
+    private trackRepository: Repository<Track>,
+    private albumService: AlbumService,
+    private artistService: ArtistService,
+  ) {}
+
+  public async create(dto: CreateTrackDto) {
+    const track = this.trackRepository.create(dto);
+    const album = await this.albumService.findById(dto.albumId);
+    const artist = await this.artistService.findById(dto.artistId);
+
+    track.album = album || null;
+    track.artist = artist || null;
+
+    return await this.saveToDataSource(track);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  protected cleanUpAfterDelete(id: string): void {}
+  public async findOne(id: string) {
+    return await this.findById(id);
+  }
 
-  public setAlbumIdToNull(albumId: string): void {
-    const track: ITrack | undefined = this.findAll().find(
-      (v) => v.albumId === albumId,
-    );
-    if (track) {
-      track.albumId = null;
-      this.dataService.save(track.id, track);
+  async update(id: string, dto: UpdateTrackDto) {
+    const track = await this.findById(id);
+    return await this.saveToDataSource({ ...track, ...dto });
+  }
+
+  async findAll() {
+    return await this.trackRepository.find();
+  }
+
+  async remove(id: string) {
+    await this.findById(id);
+    await this.trackRepository.delete(id);
+  }
+
+  public async findById(id: string) {
+    try {
+      return await this.trackRepository.findOneByOrFail({ id });
+    } catch (error) {
+      throw new NotFoundException(this.ErrorMessage.NotFound);
     }
-
-    // throw new HttpException(TrackErrorMessage.NotFound, HttpStatus.NOT_FOUND);
   }
 
-  public setArtistIdToNull(artistId: string): void {
-    const track: ITrack | undefined = this.findAll().find(
-      (v) => v.artistId === artistId,
-    );
-    if (track) {
-      track.artistId = null;
-      this.dataService.save(track.id, track);
+  private async saveToDataSource(item: Track) {
+    try {
+      return await this.trackRepository.save(item);
+    } catch (error) {
+      throw new NotAcceptableException(error.message);
     }
-
-    // throw new HttpException(TrackErrorMessage.NotFound, HttpStatus.NOT_FOUND);
   }
 }

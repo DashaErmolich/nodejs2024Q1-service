@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
   OneToOne,
   JoinColumn,
+  ManyToOne,
 } from 'typeorm';
 
 @Entity()
@@ -16,14 +17,26 @@ export class Track {
   @Column()
   name: string;
 
-  @OneToOne(() => Artist)
+  @Column()
+  duration: number;
+
+  @Column('uuid', { nullable: true })
+  artistId: string;
+
+  @ManyToOne(() => Artist, (artist) => artist.tracks, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   @JoinColumn()
   artist: Artist;
 
-  @OneToOne(() => Album)
+  @Column('uuid', { nullable: true })
+  albumId: string;
+
+  @ManyToOne(() => Album, (album) => album.tracks, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   @JoinColumn()
   album: Album;
-
-  @Column()
-  duration: number; // integer number
 }

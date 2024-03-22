@@ -10,9 +10,8 @@ import { IPublicUser, IUser } from './interfaces/user.interface';
 import { UpdatePasswordDto } from './dto/update-user-password.dto';
 import { getId, increment } from 'src/utils/utils';
 import { UserErrorMessage } from './enums/error-message';
-import { BaseService, IErrorMessage } from 'src/abstract/base.service';
-import { BaseDataService } from 'src/abstract/base-data.service';
-import { DataSource, Repository } from 'typeorm';
+import { IErrorMessage } from 'src/abstract/base.service';
+import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 

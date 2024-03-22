@@ -30,8 +30,8 @@ export class FavoritesService {
       relations: { albums: true, artists: true, tracks: true },
     });
 
-    if (!favs.length) {
-      await this.createFav();
+    if (!favs || !favs.length) {
+      return await this.createFav();
     }
 
     //TODO Find by user ID

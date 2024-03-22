@@ -10,8 +10,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Album } from './entities/album.entity';
 import { Repository } from 'typeorm';
 import { UpdateAlbumDto } from './dto/update-album.dto';
-import { Artist } from 'src/artist/entities/artist.entity';
-import { ArtistErrorMessage } from 'src/artist/enums/error-message';
 import { ArtistService } from '../artist/artist.service';
 
 @Injectable()

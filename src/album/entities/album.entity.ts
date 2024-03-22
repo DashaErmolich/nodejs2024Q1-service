@@ -1,11 +1,9 @@
 import { Artist } from 'src/artist/entities/artist.entity';
-import { Favorites } from 'src/favorites/entities/favorites.entity';
 import { Track } from 'src/track/entities/track.entity';
 import {
   Column,
   Entity,
   JoinColumn,
-  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,

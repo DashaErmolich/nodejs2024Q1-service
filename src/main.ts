@@ -18,6 +18,6 @@ async function bootstrap() {
       skipNullProperties: true,
     }),
   );
-  await app.listen(PORT, () => `Server started on port = ${PORT}`);
+  await app.listen(PORT, () => console.log(`Server started on port = ${PORT}`));
 }
 bootstrap();

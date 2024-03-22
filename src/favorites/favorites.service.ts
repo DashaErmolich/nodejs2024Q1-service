@@ -31,7 +31,7 @@ export class FavoritesService {
     });
 
     if (!favs.length) {
-      this.createFav();
+      await this.createFav();
     }
 
     //TODO Find by user ID

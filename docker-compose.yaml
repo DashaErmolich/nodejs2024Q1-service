@@ -4,7 +4,9 @@ services:
   nest:
     build:
       context: .
-    container_name: nest
+      dockerfile: Dockerfile
+    image: dashaermolich/nodejs2024q1-service-app
+    container_name: nodejs2024q1-service-app
     env_file:
       - .env
     networks:
@@ -17,7 +19,7 @@ services:
       - postgres
     restart: on-failure
   postgres:
-    container_name: postgres
+    container_name: nodejs2024q1-service-db
     image: postgres:latest
     env_file:
       - .env

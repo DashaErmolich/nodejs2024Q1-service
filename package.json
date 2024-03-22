@@ -27,7 +27,9 @@
     "migration:revert": "npm run typeorm -- -d ./src/config/typeorm.ts migration:revert",
     "migration:show": "npm run typeorm -- -d ./src/config/typeorm.ts migration:show",
     "start:dev:migrate": "npm run typeorm migration:run -- -d ./dist/config/typeorm.js && npm run start:dev",
-    "docker:up": "docker compose up"
+    "start:migrate": "npm run build && npm run typeorm migration:run -- -d ./dist/config/typeorm.js && npm run start",
+    "docker:up": "docker compose up",
+    "docker:scan": "docker scout cves dashaermolich/nodejs2024q1-service-app && docker scout cves postgres:latest"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.4",

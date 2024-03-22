@@ -10,6 +10,6 @@ COPY . .
 
 EXPOSE $PORT
 
-RUN npm run build
+# RUN npm run build
 
-CMD ["npm", "run", "start:dev:migrate"]
+CMD ["npm", "run", "start:migrate"]

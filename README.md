@@ -41,6 +41,8 @@ npm run build
 npm run docker:up
 ```
 
+Puplished app image: [dashaermolich/nodejs2024q1-service-app:latest](https://hub.docker.com/layers/dashaermolich/nodejs2024q1-service-app/latest/images/sha256:b38e5630d97b523447639e741c059ed2d762a86901c7b98a46f9e845c5315780?uuid=564c2a2a-84f0-46b4-a457-9c31748a393a%0A)
+
 ## Scan docker image in separate terminal
 
 ```

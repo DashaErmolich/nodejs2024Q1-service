@@ -17,30 +17,43 @@ git clone https://github.com/DashaErmolich/nodejs2024Q1-service.git
 cd nodejs2024Q1-service
 ```
 
-## Switch to develop
+## Switch to feat-part-2
 
 ```
-git checkout develop
+git checkout feat-part-2
 ```
-
 
 ## Installing NPM modules
 
 ```
-npm install
+npm ci --legacy-peer-deps
 ```
 
-## Running application
+## Build app
 
 ```
-npm start
+npm run build
+```
+
+## Run docker container
+
+```
+npm run docker:up
+```
+
+Puplished app image: [dashaermolich/nodejs2024q1-service-app:latest](https://hub.docker.com/layers/dashaermolich/nodejs2024q1-service-app/latest/images/sha256:b38e5630d97b523447639e741c059ed2d762a86901c7b98a46f9e845c5315780?uuid=564c2a2a-84f0-46b4-a457-9c31748a393a%0A)
+
+## Scan docker image in separate terminal
+
+```
+npm run docker:scan
 ```
 
 After starting the app on port (4000 as default) you can open
 in your browser OpenAPI documentation by typing http://localhost:4000/api/.
 For more information about OpenAPI/Swagger please visit https://swagger.io/.
 
-## Testing
+## Testing in separate terminal or via Docker Desktop
 
 After application running open new terminal and enter:
 
@@ -83,3 +96,7 @@ npm run format
 Press <kbd>F5</kbd> to debug.
 
 For more information, visit: https://code.visualstudio.com/docs/editor/debugging
+
+### App image on Docker Hub
+
+[dashaermolich/nodejs2024q1-service-app:latest](https://hub.docker.com/layers/dashaermolich/nodejs2024q1-service-app/latest/images/sha256:b38e5630d97b523447639e741c059ed2d762a86901c7b98a46f9e845c5315780?uuid=564c2a2a-84f0-46b4-a457-9c31748a393a%0A)

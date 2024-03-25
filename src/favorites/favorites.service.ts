@@ -1,51 +1,122 @@
-import { Injectable, UnprocessableEntityException } from '@nestjs/common';
+import {
+  Injectable,
+  NotAcceptableException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { FavoritesType } from './enums/favorites-type';
-import { FavoritesDataService } from './favorites-data.service';
-import { FavoritesResponse } from './interfaces/favorites.interface';
 import { ArtistService } from 'src/artist/artist.service';
 import { AlbumService } from 'src/album/album.service';
 import { TrackService } from 'src/track/track.service';
+import { Repository } from 'typeorm';
+import { Favorites } from './entities/favorites.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Album } from 'src/album/entities/album.entity';
+import { Artist } from 'src/artist/entities/artist.entity';
+import { Track } from 'src/track/entities/track.entity';
+import { HasId } from 'src/abstract/base.service';
 
 @Injectable()
 export class FavoritesService {
   constructor(
-    private dataService: FavoritesDataService,
-    private artistService: ArtistService,
+    @InjectRepository(Favorites)
+    private favoritesRepository: Repository<Favorites>,
     private albumService: AlbumService,
+    private artistService: ArtistService,
     private trackService: TrackService,
   ) {}
 
-  findAll(): FavoritesResponse {
-    const favorites = this.dataService.getAll();
-    return {
-      albums: this.albumService.findAllByIds(favorites.albums),
-      artists: this.artistService.findAllByIds(favorites.artists),
-      tracks: this.trackService.findAllByIds(favorites.tracks),
-    };
+  async findAll() {
+    const favs = await this.favoritesRepository.find({
+      relations: { albums: true, artists: true, tracks: true },
+    });
+
+    if (!favs || !favs.length) {
+      return await this.createFav();
+    }
+
+    //TODO Find by user ID
+    return favs[0];
   }
 
-  addOne(id: string, type: FavoritesType): void {
-    this.findOne(id, type);
-    this.dataService.addOne(id, type);
+  private async createFav() {
+    const fav = this.favoritesRepository.create();
+    fav.albums = [];
+    fav.artists = [];
+    fav.tracks = [];
+
+    return await this.saveToDataSource(fav);
   }
 
-  findOne(id: string, type: FavoritesType) {
+  async addOne(id: string, type: FavoritesType) {
+    const fav = await this.findAll();
+    const item = await this.findOne(id, type);
+
+    switch (type) {
+      case FavoritesType.Album:
+        fav.albums.push(item as Album);
+        break;
+      case FavoritesType.Artist:
+        fav.artists.push(item as Artist);
+        break;
+      case FavoritesType.Track:
+        fav.tracks.push(item as Track);
+        break;
+    }
+
+    await this.saveToDataSource(fav);
+  }
+
+  private async findOne(id: string, type: FavoritesType) {
     try {
       switch (type) {
         case FavoritesType.Album:
-          return this.albumService.findOne(id);
+          return await this.albumService.findOne(id);
         case FavoritesType.Artist:
-          return this.artistService.findOne(id);
+          return await this.artistService.findOne(id);
         case FavoritesType.Track:
-          return this.trackService.findOne(id);
+          return await this.trackService.findOne(id);
       }
     } catch (error) {
       throw new UnprocessableEntityException(error.message);
     }
   }
 
-  remove(id: string, type: FavoritesType) {
-    this.findOne(id, type);
-    this.dataService.removeOne(id, type);
+  private removeOneByType(id: string, type: FavoritesType, favs: Favorites) {
+    switch (type) {
+      case FavoritesType.Album: {
+        this.removeOne(favs.albums, id);
+        break;
+      }
+      case FavoritesType.Artist: {
+        this.removeOne(favs.artists, id);
+        break;
+      }
+      case FavoritesType.Track: {
+        this.removeOne(favs.tracks, id);
+        break;
+      }
+    }
+  }
+
+  private removeOne<T extends HasId>(arr: T[], itemId: string) {
+    const index = arr.findIndex((v) => v.id === itemId);
+    if (index !== -1) {
+      arr.splice(index, 1);
+    }
+  }
+
+  async remove(id: string, type: FavoritesType) {
+    const fav = await this.findAll();
+    await this.findOne(id, type);
+    this.removeOneByType(id, type, fav);
+    await this.saveToDataSource(fav);
+  }
+
+  private async saveToDataSource(item: Favorites) {
+    try {
+      return await this.favoritesRepository.save(item);
+    } catch (error) {
+      throw new NotAcceptableException(error.message);
+    }
   }
 }

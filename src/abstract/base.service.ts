@@ -1,7 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { BaseDataService } from './base-data.service';
 
-interface HasId {
+export interface HasId {
   id: string;
 }
 

@@ -1,38 +1,66 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { getId } from 'src/utils/utils';
+import {
+  Inject,
+  Injectable,
+  NotAcceptableException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateAlbumDto } from './dto/create-album.dto';
-import { IAlbum } from './interfaces/album.interface';
-import { BaseService, IErrorMessage } from 'src/abstract/base.service';
-import { BaseDataService } from 'src/abstract/base-data.service';
-import { TrackService } from 'src/track/track.service';
+import { IErrorMessage } from 'src/abstract/base.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Album } from './entities/album.entity';
+import { Repository } from 'typeorm';
+import { UpdateAlbumDto } from './dto/update-album.dto';
+import { ArtistService } from '../artist/artist.service';
 
 @Injectable()
-export class AlbumService extends BaseService<IAlbum> {
+export class AlbumService {
   constructor(
     @Inject('ERROR_MSG') protected ErrorMessage: IErrorMessage,
-    protected dataService: BaseDataService<IAlbum>,
-    private trackService: TrackService,
-  ) {
-    super(ErrorMessage, dataService);
+    @InjectRepository(Album)
+    private albumRepository: Repository<Album>,
+    private artistService: ArtistService,
+  ) {}
+
+  public async create(dto: CreateAlbumDto) {
+    const album = this.albumRepository.create(dto);
+    const artist = await this.artistService.findById(dto.artistId);
+    album.artist = artist || null;
+    return await this.saveToDataSource(album);
   }
 
-  cleanUpAfterDelete(id: string) {
-    this.trackService.setAlbumIdToNull(id);
+  public async findOne(id: string) {
+    return await this.findById(id);
   }
 
-  create(dto: CreateAlbumDto) {
-    const newTrack: IAlbum = { ...dto, id: getId() };
-    this.dataService.save(newTrack.id, newTrack);
-    return newTrack;
+  async update(id: string, dto: UpdateAlbumDto) {
+    const album = await this.findById(id);
+    return await this.saveToDataSource({ ...album, ...dto });
   }
 
-  setArtistIdToNull(artistId: string): void {
-    const album: IAlbum | undefined = this.findAll().find(
-      (v) => v.artistId === artistId,
-    );
-    if (album) {
-      album.artistId = null;
-      this.dataService.save(album.id, album);
+  async findAll() {
+    return await this.albumRepository.find();
+  }
+
+  async remove(id: string) {
+    await this.findById(id);
+    await this.albumRepository.delete(id);
+  }
+
+  public async findById(id: string) {
+    try {
+      if (id) {
+        return await this.albumRepository.findOneByOrFail({ id });
+      }
+    } catch (error) {
+      throw new NotFoundException(this.ErrorMessage.NotFound);
+    }
+  }
+
+  private async saveToDataSource(item: Album) {
+    try {
+      return await this.albumRepository.save(item);
+    } catch (error) {
+      throw new NotAcceptableException(error.message);
     }
   }
 }

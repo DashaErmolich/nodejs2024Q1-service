@@ -3,11 +3,13 @@ import { AlbumService } from './album.service';
 import { AlbumController } from './album.controller';
 import { BaseDataService } from 'src/abstract/base-data.service';
 import { IAlbum } from './interfaces/album.interface';
-import { TrackModule } from 'src/track/track.module';
 import { AlbumErrorMessage } from './enums/error-message';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Album } from './entities/album.entity';
+import { ArtistModule } from 'src/artist/artist.module';
 
 @Module({
-  imports: [forwardRef(() => TrackModule)],
+  imports: [TypeOrmModule.forFeature([Album]), forwardRef(() => ArtistModule)],
   controllers: [AlbumController],
   providers: [
     AlbumService,

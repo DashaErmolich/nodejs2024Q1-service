@@ -26,7 +26,7 @@ export const dbdatasource: DataSourceOptions = {
   // Database name
   database: `${process.env.POSTGRES_DB}`,
   // Synchronize database schema with entities
-  synchronize: false,
+  synchronize: true,
   entities: ['dist/**/entities/*.entity.js'],
   migrations: ['dist/migrations/*.js'],
   migrationsTableName: 'hl_migrations',

@@ -3,6 +3,7 @@ import {
   HttpStatus,
   Inject,
   Injectable,
+  NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -25,32 +26,25 @@ export class UserService {
     private userRepository: Repository<User>,
   ) {}
   public async create(dto: CreateUserDto) {
-    const timestamp = Date.now();
-    const newUser: IPublicUser = {
-      login: dto.login,
-      id: getId(),
-      createdAt: timestamp,
-      updatedAt: timestamp,
-      version: DEFAULT_USER_VERSION,
-    };
-    await this.userRepository.save({ ...newUser, password: dto.password });
-    return newUser;
+    const user = this.userRepository.create(dto);
+    return await this.saveToDataSource(user);
+    // return this.getPublicUser(user);
+  }
+
+  private async createUser(dto: CreateUserDto) {
+    const user = this.userRepository.create(dto);
+    await this.saveToDataSource(user);
+    return this.getPublicUser(user);
   }
 
   public async findOne(id: string) {
-    const user = await this.findById(id);
-    return this.getPublicUser(user);
+    return await this.findById(id);
   }
 
   async updateUser(id: string, dto: UpdatePasswordDto) {
     const user = await this.findById(id);
     this.checkPassword(user.password, dto.oldPassword);
-    user.password = dto.newPassword;
-    user.version = increment(user.version);
-    user.updatedAt = Date.now();
-    await this.userRepository.update(id, {
-      password: dto.newPassword,
-    });
+    await this.saveToDataSource({ ...user, password: dto.newPassword });
     return this.getPublicUser(user);
   }
 
@@ -72,7 +66,7 @@ export class UserService {
     }
   }
 
-  private getPublicUser(user: IUser): IPublicUser {
+  private getPublicUser(user: User): IPublicUser {
     const copy = { ...user };
     delete copy.password;
     return {
@@ -88,5 +82,17 @@ export class UserService {
     } catch (error) {
       throw new NotFoundException(this.ErrorMessage.NotFound);
     }
+  }
+
+  private async saveToDataSource(item: User) {
+    try {
+      return await this.userRepository.save(item);
+    } catch (error) {
+      throw new NotAcceptableException(error.message);
+    }
+  }
+
+  public async findByLogin(login: string) {
+    return await this.userRepository.findOneBy({ login });
   }
 }

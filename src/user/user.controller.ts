@@ -41,7 +41,7 @@ export class UserController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateUserDto: UpdatePasswordDto,
   ) {
-    return this.dataService.updateUser(id, updateUserDto);
+    return this.dataService.updateUserPassword(id, updateUserDto);
   }
 
   @Delete(':id')

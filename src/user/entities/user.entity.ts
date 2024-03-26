@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import {
   Entity,
   Column,
@@ -26,4 +27,8 @@ export class User {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @Column({ nullable: true })
+  @Exclude()
+  refreshToken: string;
 }

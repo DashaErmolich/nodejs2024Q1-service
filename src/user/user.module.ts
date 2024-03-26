@@ -6,6 +6,8 @@ import { IUser } from './interfaces/user.interface';
 import { UserErrorMessage } from './enums/error-message';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
+import { APP_GUARD } from '@nestjs/core';
+import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User])],
@@ -14,6 +16,7 @@ import { User } from './entities/user.entity';
     UserService,
     BaseDataService<IUser>,
     { provide: 'ERROR_MSG', useValue: UserErrorMessage },
+    { provide: APP_GUARD, useClass: AccessTokenGuard },
   ],
   exports: [UserService],
 })

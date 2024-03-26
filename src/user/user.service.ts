@@ -41,7 +41,7 @@ export class UserService {
     return await this.findById(id);
   }
 
-  async updateUser(id: string, dto: UpdatePasswordDto) {
+  async updateUserPassword(id: string, dto: UpdatePasswordDto) {
     const user = await this.findById(id);
     this.checkPassword(user.password, dto.oldPassword);
     await this.saveToDataSource({ ...user, password: dto.newPassword });
@@ -94,5 +94,10 @@ export class UserService {
 
   public async findByLogin(login: string) {
     return await this.userRepository.findOneBy({ login });
+  }
+
+  public async updateRefreshToken(id: string, refreshToken: string) {
+    const user = await this.findById(id);
+    await this.saveToDataSource({ ...user, refreshToken });
   }
 }
